@@ -1,42 +1,90 @@
-#root {
-  max-width: 1280px;
+.homepageWrapper {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+
+.formWrapper {
+  background: #282a36;
+  padding: 20px;
+  border-radius: 10px;
+  width: 400px;
+  max-width: 90%;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.mainLabel {
+  margin-top: 0;
+  margin-bottom: 20px;
+}
+
+.inputBox {
+  padding: 10px;
+  border-radius: 5px;
+  outline: none;
+  border: none;
+  margin-bottom: 14px;
+  background: #eee;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.btn {
+  border: none;
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+}
+
+.joinBtn {
+  background: #4aed88;
+  width: 100px;
+  margin-left: auto;
+}
+.joinBtn:hover {
+  background: #2b824c;
+}
+
+.createInfo {
   margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  margin-top: 20px;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
+.createNewBtn {
+  color: #4aed88;
+  text-decoration: none;
+  border-bottom: 1px solid #4aed88;
+  transition: all 0.3s ease-in-out;
 }
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.createNewBtn:hover, footer a {
+  color: #368654;
+  border-color: #368654;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.mainWrapper {
+  display: grid;
+  grid-template-columns: 230px 1fr;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+.sidebarWrapper {
+  background: #1c1e29;
+  padding: 16px;
+  color: #fff;
 }
 
-.card {
-  padding: 2em;
+footer {
+  position: fixed;
+  bottom: 0;
 }
 
-.read-the-docs {
-  color: #888;
+footer a {
+  color: #4aee88;
 }
