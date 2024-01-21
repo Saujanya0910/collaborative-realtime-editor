@@ -46,7 +46,10 @@ const Home = () => {
   return (
     <div className="homepageWrapper">
       <div className="formWrapper">
-        <span>Real-time Collaborative <br /> Code Editor</span>
+        {/* TODO update */}
+        <div className="logo">
+          <span>Real-time Collaborative <br /> Code Editor</span>
+        </div>
         <h4 className="mainLabel">Paste the <i>Room ID</i> from your invitation</h4>
         <div className="inputGroup">
           <input 

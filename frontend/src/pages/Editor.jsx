@@ -11,15 +11,19 @@ import CodeEditor from "../components/Editor";
 const Editor = () => {
   const [clients, setClients] = useState([
     { socketId: 1, username: 'Saujanya P' },
-    { socketId: 2, username: 'Leo M' }
+    { socketId: 2, username: 'Leo M' },
+    { socketId: 3, username: 'Crissy Naldo' },
+    { socketId: 4, username: 'MoNeymar Jr' }
   ])
   return (
     <div>
-      <p>Editor page</p>
       <div className="mainWrapper">
         <div className="sidebarWrapper">
           <div className="sidebar">
-            <span>Real-time Collaborative <br /> Code Editor</span>
+            {/* TODO update */}
+            <div className="logo">
+              <span>Real-time Collaborative <br /> Code Editor</span>
+            </div>
 
             <h3>Connected</h3>
 
