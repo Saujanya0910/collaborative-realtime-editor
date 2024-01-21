@@ -1,7 +1,7 @@
 {
   "scripts": {
     "start:frontend": "cd frontend && npm run dev",
-    "start:backend": "cd backend && node index.js",
+    "start:backend": "cd backend && npm run start:dev",
     "start": "concurrently \"npm run start:frontend\" \"npm run start:backend\"",
     "install": "lerna bootstrap"
   },

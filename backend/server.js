@@ -1,6 +1,7 @@
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
+require('dotenv').config({debug: true}); // TODO - remove debug
 
 const app = express();
 const server = http.createServer(app);
