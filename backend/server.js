@@ -1,13 +1,24 @@
 const express = require('express');
-const app = express();
-const port = 3001;
+const http = require('http');
+const { Server } = require('socket.io');
 
-app.get('/', (req, res) => {
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
+
+app.use(express.json())
+
+io.on('connection', (socket) => {
+  console.log("Socket connected: ", socket.id);
+});
+
+app.get('/', (_, res) => {
   res.send('Hello from Express!');
 });
 
-app.listen(port, () => {
-  console.log(`Server is running at http://localhost:${port}`);
+const port = process.env.PORT || 3001;
+server.listen(port, () => {
+  console.log(`Server is running at PORT: ${port}`);
 });
 
 const routes = require('./routes/app.route');
