@@ -1,4 +1,4 @@
-const ACTIONS = require('../shared/Actions');
+const { ACTIONS } = require('./Actions.js');
 
 /**
  * Handler for all socket related operations
@@ -7,7 +7,7 @@ const ACTIONS = require('../shared/Actions');
 module.exports = function (io) {
 
   /**
-   * Store socket-id to username mapping in-memory
+   * Store **in-memory** mapping of socket-id to username
    * @type {{ [string]: string }}
    */
   const userSocketMapping = {};
@@ -28,6 +28,7 @@ module.exports = function (io) {
   io.on('connection', (socket) => {
     console.log("Socket connected: ", socket.id);
   
+    // listen to join event of current socket
     socket.on(ACTIONS.JOIN, ({ roomId, username }) => {
       userSocketMapping[socket.id] = username; // store socketid to username mapping
       socket.join(roomId);  // make socketid join the room
@@ -41,6 +42,23 @@ module.exports = function (io) {
           socketId: socket.id
         });
       })
+    });
+
+    // listen to event triggered just before current socket is disconnected
+    socket.on('disconnecting', () => {
+      const allRoomsOfCurrentSocket = Array.from(socket.rooms);
+      allRoomsOfCurrentSocket.forEach((roomId) => {
+        // broadcast disconnected event from current socket to all other sockets in each room
+        socket.in(roomId).emit(ACTIONS.DISCONNECTED, {
+          socketId: socket.id,
+          username: userSocketMapping[socket.id]
+        });
+
+        // socket.leave(roomId);
+      });
+      delete userSocketMapping[socket.id];
+
+      socket.leave();
     });
   });
 }

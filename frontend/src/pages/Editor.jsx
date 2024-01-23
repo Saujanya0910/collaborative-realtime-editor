@@ -4,7 +4,7 @@ import { initSocket } from "../../../backend/socket";
 import Client from "../components/Client";
 import CodeEditor from "../components/Editor";
 import toast from 'react-hot-toast';
-import * as ACTIONS from '../Actions';
+import ACTIONS from "../../Actions.js";
 
 /**
  * @typedef EachClient
@@ -24,11 +24,21 @@ const Editor = () => {
     // { socketId: 3, username: 'Crissy Naldo' },
     // { socketId: 4, username: 'MoNeymar Jr' }
   ]);
+
+  const copyRoomId = () => {
+    window.navigator.clipboard.writeText(roomId);
+    toast.success(`Room-id copied to clipboard`);
+  }
+
+  const leaveRoom = () => {
+    toast.success(`Leaving the current room...`);
+    return; // TODO
+    setTimeout(() => navigator('/'), 1500);
+  }
   
   useEffect(() => {
     const init = async () => {
       const backendUrl = import.meta.env.VITE_REACT_APP_BACKEND_URL;
-      console.log("backendUrl", backendUrl);
       socketRef.current = await initSocket(backendUrl);
 
       // listen to any socket error errors encountered
@@ -58,10 +68,25 @@ const Editor = () => {
           console.log(`${username} joined`);
           toast.success(`${username} joined the room!`);
         }
-      })
+      });
+
+      // listen to DISCONNECTED event
+      socketRef.current.on(ACTIONS.DISCONNECTED, ({ socketId: disconnectedSocket, username }) => {
+        toast.success(`${username} left the room!`);
+        setClients((allConnectedClients) => allConnectedClients.filter(client => client.socketId === disconnectedSocket));
+      });
+
+      // cleanup
+      return () => {
+        // unsubscribe from all listeners & disconnect the socket
+        socketRef.current.off(ACTIONS.JOINED);
+        socketRef.current.off(ACTIONS.DISCONNECTED);
+
+        socketRef.current.disconnect();
+      }
     }
     init();
-  }, [location.state?.username, navigator, roomId]);
+  }, []);
 
   if(!location.state) {
     return <Navigate to="/"></Navigate>
@@ -86,8 +111,8 @@ const Editor = () => {
             </div>
           </div>
 
-          <button className="btn copyBtn">Copy <i>Room ID</i></button>
-          <button className="btn leaveBtn">Leave</button>
+          <button className="btn copyBtn" onClick={copyRoomId}>Copy <i>Room ID</i></button>
+          <button className="btn leaveBtn" onClick={leaveRoom}>Leave</button>
         </div>
 
         <div className="editorSection">
