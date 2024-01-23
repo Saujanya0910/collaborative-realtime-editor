@@ -124,6 +124,42 @@
   padding-top: 20px;
 }
 
+/* editor component css */
+.container {
+  background: #282a36;
+  padding: 20px;
+  border-radius: 10px;
+  width: 400px;
+  max-width: 90%;
+}
+
+label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+  color: #8be9fd;
+}
+
+select,
+input {
+  padding: 10px;
+  border-radius: 5px;
+  outline: none;
+  border: none;
+  margin-bottom: 14px;
+  background: #eee;
+  font-size: 16px;
+  color: #444;
+}
+
+.CodeEditor {
+  height: 500px;
+  background-color: #282a36;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  color: #f8f8f2;
+}
+
 footer {
   position: fixed;
   bottom: 0;

@@ -27,7 +27,7 @@ const Editor = () => {
 
   const copyRoomId = () => {
     window.navigator.clipboard.writeText(roomId);
-    toast.success(`Room-id copied to clipboard`);
+    toast.success(`Room ID copied to clipboard`);
   }
 
   const leaveRoom = () => {
