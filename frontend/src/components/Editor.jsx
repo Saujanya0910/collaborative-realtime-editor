@@ -27,7 +27,7 @@ const availableThemes = [
   'hc-black'
 ];
 
-const Editor = ({ socketRef, roomId }) => {
+const Editor = ({ socketRef, roomId, onCodeChange }) => {
   const [code, setCode] = useState("// Your initial code here");
   const [language, setLanguage] = useState("javascript");
   const [theme, setTheme] = useState('vs-dark');
@@ -76,7 +76,8 @@ const Editor = ({ socketRef, roomId }) => {
     socketRef.current.emit(ACTIONS.CODE_CHANGE, {
       roomId,
       code: value
-    })
+    });
+    onCodeChange(value);
   }
 
   useEffect(() => {

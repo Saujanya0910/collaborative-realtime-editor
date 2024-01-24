@@ -14,8 +14,11 @@ import ACTIONS from "../../Actions.js";
 
 const Editor = () => {
   const location = useLocation();
-  const socketRef = useRef(null);
   const { roomId } = useParams();
+
+  const socketRef = useRef(null);
+  const codeRef = useRef(null);
+  
   const navigator = useNavigate();
   
   const [clients, setClients] = useState([]);
@@ -66,31 +69,34 @@ const Editor = () => {
       });
 
       // listen to JOINED event
-      socketRef.current.on(ACTIONS.JOINED, ({ connectedClients, username }) => {
-        setClients(connectedClients);
-
+      socketRef.current.on(ACTIONS.JOINED, ({ connectedClients, socketId: joinedSocketId, username }) => {
         if(username !== location.state?.username) {
           console.log(`${username} joined`);
           toast.success(`${username} joined the room!`);
         }
+
+        setClients(connectedClients);
+
+        // emit sync code event to update code for newly joined socket
+        socketRef.current.emit(ACTIONS.SYNC_CODE, { socketId: joinedSocketId, code: codeRef.current })
       });
 
       // listen to DISCONNECTED event
       socketRef.current.on(ACTIONS.DISCONNECTED, ({ socketId: disconnectedSocket, username }) => {
         toast.success(`${username} left the room!`);
-        setClients((allConnectedClients) => allConnectedClients.filter(client => client.socketId === disconnectedSocket));
+        setClients((allConnectedClients) => allConnectedClients.filter(client => client.socketId !== disconnectedSocket));
       });
-
-      // cleanup
-      return () => {
-        // unsubscribe from all listeners & disconnect the socket
-        socketRef.current.off(ACTIONS.JOINED);
-        socketRef.current.off(ACTIONS.DISCONNECTED);
-
-        socketRef.current.disconnect();
-      }
     }
     init();
+
+    // cleanup
+    return () => {
+      // unsubscribe from all listeners & disconnect the socket
+      socketRef.current.disconnect();
+
+      socketRef.current.off(ACTIONS.JOINED);
+      socketRef.current.off(ACTIONS.DISCONNECTED);
+    }
   }, []);
 
   if(!location.state) {
@@ -121,7 +127,7 @@ const Editor = () => {
         </div>
 
         <div className="editorSection">
-          <CodeEditor socketRef={socketRef} roomId={roomId} />
+          <CodeEditor socketRef={socketRef} roomId={roomId} onCodeChange={(code) => codeRef.current = code}/>
         </div>
       </div>
     </div>

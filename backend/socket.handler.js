@@ -49,6 +49,11 @@ module.exports = function (io) {
       socket.in(roomId).emit(ACTIONS.CODE_CHANGE, { code }); // emit code-change event to all other sockets in the read
     });
 
+    // listen to sync-code event for a new joinee
+    socket.on(ACTIONS.SYNC_CODE, ({ socketId: joinedSocketId, code }) => {
+      io.to(joinedSocketId).emit(ACTIONS.CODE_CHANGE, { code });
+    })
+
     // listen to event triggered just before current socket is disconnected
     socket.on('disconnecting', () => {
       const allRoomsOfCurrentSocket = Array.from(socket.rooms);
