@@ -35,43 +35,64 @@ const Editor = ({ socketRef, roomId }) => {
   const [colorizeBracketPair, setColorizeBracketPair] = useState(false);
 
   // Handle UI changes
+  /**
+   * Handle language selection change
+   * @param {Event} event 
+   */
   const handleLanguageChange = (event) => {
     setLanguage(event.target.value);
   };
 
+  /**
+   * Handle theme selection change
+   * @param {Event} event 
+   */
   const handleThemeChange = (event) => {
     setTheme(event.target.value);
   };
 
+  /**
+   * Handle read-only selection change
+   * @param {Event} event 
+   */
   const handleReadOnlyChange = (event) => {
     setReadOnly(event.target.checked);
   };
 
-  const handleCodeChange = (value, event) => {
-    // console.log("handleCodeChange() value", value);
+  /**
+   * Handle bracket-pair-colorization selection change
+   * @param {Event} event 
+   */
+  const handleColorizeBracketPairChange = (event) => {
+    setColorizeBracketPair(event.target.checked);
+  };
+
+  /**
+   * Handle code change in editor & emit event to room
+   * @param {string} value 
+   */
+  const handleCodeChange = (value) => {
     setCode(value);
-    // console.log("handleCodeChange() event", event);
-    // console.log("------------------------------------");
     socketRef.current.emit(ACTIONS.CODE_CHANGE, {
       roomId,
       code: value
     })
   }
 
-  const handleColorizeBracketPairChange = (event) => {
-    setColorizeBracketPair(event.target.checked);
-  };
-
   useEffect(() => {
     // listen to CODE-CHANGE event from server
     if(socketRef && socketRef.current) {
       socketRef.current.on(ACTIONS.CODE_CHANGE, ({ code: receivedCode }) => {
-        // console.log("socketRef.current.on(ACTIONS.CODE_CHANGE receivedCode", receivedCode);
         if(receivedCode !== null) {
-          // console.log("inside if(receivedCode !== null)");
           setCode(() => receivedCode);
         }
       });
+    }
+
+    // cleanup
+    return () => {
+      // unsubscribe from all listeners
+      socketRef.current.off(ACTIONS.CODE_CHANGE);
     }
   }, [socketRef.current])
 

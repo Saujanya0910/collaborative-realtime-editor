@@ -18,22 +18,26 @@ const Editor = () => {
   const { roomId } = useParams();
   const navigator = useNavigate();
   
-  const [clients, setClients] = useState([
-    // { socketId: 1, username: 'Saujanya P' },
-    // { socketId: 2, username: 'Leo M' },
-    // { socketId: 3, username: 'Crissy Naldo' },
-    // { socketId: 4, username: 'MoNeymar Jr' }
-  ]);
+  const [clients, setClients] = useState([]);
 
-  const copyRoomId = () => {
-    window.navigator.clipboard.writeText(roomId);
-    toast.success(`Room ID copied to clipboard`);
+  /**
+   * Handler for copy room-id action
+   */
+  const copyRoomId = async () => {
+    try {
+      await window.navigator.clipboard.writeText(roomId);
+      toast.success(`Room ID copied to your clipboard`);
+    } catch (err) {
+      toast.error('Oops! Something went wrong')
+    }
   }
 
+  /**
+   * Handler for leave room action
+   */
   const leaveRoom = () => {
     toast.success(`Leaving the current room...`);
-    return; // TODO
-    setTimeout(() => navigator('/'), 1500);
+    setTimeout(() => navigator('/'), 500);
   }
   
   useEffect(() => {
@@ -55,6 +59,7 @@ const Editor = () => {
         navigator('/');
       }
 
+      // emit JOIN event to the room
       socketRef.current.emit(ACTIONS.JOIN, {
         roomId,
         username: location.state?.username
