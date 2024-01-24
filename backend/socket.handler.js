@@ -44,6 +44,11 @@ module.exports = function (io) {
       })
     });
 
+    // listen to code-change event of current socket
+    socket.on(ACTIONS.CODE_CHANGE, ({ roomId, code }) => {
+      socket.in(roomId).emit(ACTIONS.CODE_CHANGE, { code }); // emit code-change event to all other sockets in the read
+    });
+
     // listen to event triggered just before current socket is disconnected
     socket.on('disconnecting', () => {
       const allRoomsOfCurrentSocket = Array.from(socket.rooms);

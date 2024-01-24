@@ -116,7 +116,7 @@ const Editor = () => {
         </div>
 
         <div className="editorSection">
-          <CodeEditor />
+          <CodeEditor socketRef={socketRef} roomId={roomId} />
         </div>
       </div>
     </div>

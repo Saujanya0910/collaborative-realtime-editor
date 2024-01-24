@@ -1,6 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import MonacoEditor from '@monaco-editor/react';
+import ACTIONS from "../../Actions.js";
 
+/**
+ * Configurable languages available for the editor
+ */
 const topLanguages = [
   'javascript',
   'python',
@@ -14,13 +18,16 @@ const topLanguages = [
   'swift',
   'go'
 ];
+/**
+ * Configurable themes available for the editor
+ */
 const availableThemes = [
   'vs-dark',
   'vs-light',
-  'hc-black' // High contrast theme, add more as needed
+  'hc-black'
 ];
 
-const Editor = () => {
+const Editor = ({ socketRef, roomId }) => {
   const [code, setCode] = useState("// Your initial code here");
   const [language, setLanguage] = useState("javascript");
   const [theme, setTheme] = useState('vs-dark');
@@ -40,13 +47,38 @@ const Editor = () => {
     setReadOnly(event.target.checked);
   };
 
+  const handleCodeChange = (value, event) => {
+    // console.log("handleCodeChange() value", value);
+    setCode(value);
+    // console.log("handleCodeChange() event", event);
+    // console.log("------------------------------------");
+    socketRef.current.emit(ACTIONS.CODE_CHANGE, {
+      roomId,
+      code: value
+    })
+  }
+
   const handleColorizeBracketPairChange = (event) => {
     setColorizeBracketPair(event.target.checked);
   };
 
+  useEffect(() => {
+    // listen to CODE-CHANGE event from server
+    if(socketRef && socketRef.current) {
+      socketRef.current.on(ACTIONS.CODE_CHANGE, ({ code: receivedCode }) => {
+        // console.log("socketRef.current.on(ACTIONS.CODE_CHANGE receivedCode", receivedCode);
+        if(receivedCode !== null) {
+          // console.log("inside if(receivedCode !== null)");
+          setCode(() => receivedCode);
+        }
+      });
+    }
+  }, [socketRef.current])
+
   return (
     // <div className="container">
     <div className="">
+      {/* language selection */}
       <div>
         <label>
           Language:
@@ -59,6 +91,7 @@ const Editor = () => {
           </select>
         </label>
       </div>
+      {/* theme selection */}
       <div>
         <label>
           Theme:
@@ -71,12 +104,14 @@ const Editor = () => {
           </select>
         </label>
       </div>
+      {/* read-only selection */}
       <div>
         <label>
           Read-Only:
           <input type="checkbox" checked={readOnly} onChange={handleReadOnlyChange} />
         </label>
       </div>
+      {/* bracket pair colorization selection */}
       <div>
         <label>
           Colorize bracket-pairs:
@@ -89,6 +124,7 @@ const Editor = () => {
           language={language}
           theme={theme}
           value={code}
+          onChange={handleCodeChange}
           options={{
             readOnly: readOnly,
             minimap: { enabled: false },
@@ -97,7 +133,9 @@ const Editor = () => {
             autoClosingBrackets: 'always',
             cursorBlinking: 'blink',
             autoClosingQuotes: 'always',
-            bracketPairColorization: colorizeBracketPair
+            bracketPairColorization: {
+              enabled: colorizeBracketPair
+            }
           }}
         />
       </div>
