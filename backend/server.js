@@ -2,7 +2,7 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const socketHandler = require('./socket.handler');
-require('dotenv').config({debug: true}); // TODO - remove debug
+require('dotenv');
 const routes = require('./routes/app.route');
 
 const app = express();
