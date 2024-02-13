@@ -1,3 +1,7 @@
+node_modules
+package-lock.json
+.env
+
 # frontend
 frontend/node_modules
 frontend/package-lock.json
