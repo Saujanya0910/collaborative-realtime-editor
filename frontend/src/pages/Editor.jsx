@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react"
 import { useLocation, useParams, useNavigate, Navigate } from "react-router-dom";
-import { initSocket } from "../../../backend/socket";
+import { initSocket } from "../../Socket";
 import Client from "../components/Client";
 import CodeEditor from "../components/Editor";
 import toast from 'react-hot-toast';
-import ACTIONS from "../../Actions.js";
+import { ACTIONS } from "../utils/constants";
 
 /**
  * @typedef EachClient
