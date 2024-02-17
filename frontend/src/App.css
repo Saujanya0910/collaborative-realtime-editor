@@ -152,6 +152,10 @@ input {
   color: #444;
 }
 
+.editor-options {
+  margin: 20px 0;
+}
+
 .CodeEditor {
   height: 500px;
   background-color: #282a36;

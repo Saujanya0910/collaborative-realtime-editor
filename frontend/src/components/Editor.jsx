@@ -1,38 +1,46 @@
 import { useEffect, useState } from 'react';
 import MonacoEditor from '@monaco-editor/react';
-import ACTIONS from "../../Actions.js";
-import { availableThemes, topLanguages } from '../utils/constants.js';
+import { availableThemes, languageOptions, ACTIONS } from '../utils/constants.js';
+import { Select, Space } from 'antd';
 
 const Editor = ({ socketRef, roomId, onCodeChange }) => {
   const [code, setCode] = useState("// Your initial code here");
-  const [language, setLanguage] = useState("javascript");
-  const [theme, setTheme] = useState('vs-dark');
-  const [readOnly, setReadOnly] = useState(false);
+  const [language, setLanguage] = useState(languageOptions[0]);
+  const [theme, setTheme] = useState(availableThemes[0]);
+  // const [readOnly, setReadOnly] = useState(false);
 
   // Handle UI changes
   /**
    * Handle language selection change
-   * @param {Event} event 
+   * @param {string} selectedLanguage 
    */
-  const handleLanguageChange = (event) => {
-    setLanguage(event.target.value);
+  const handleLanguageChange = (selectedLanguage) => {
+    setLanguage(selectedLanguage);
   };
+
+  /**
+   * Handle language selection filter on-change
+   * @param {string} input 
+   * @param {import('../utils/constants.js').LanguageOption} option 
+   */
+  const filterLanguageOptions = (input, option) => (option?.label || '').toLowerCase().includes(input.toLowerCase());
 
   /**
    * Handle theme selection change
-   * @param {Event} event 
+   * @param {import('../utils/constants.js').ThemeOption} selectedTheme 
    */
-  const handleThemeChange = (event) => {
-    setTheme(event.target.value);
+  const handleThemeChange = (selectedTheme) => {
+    console.log("selectedTheme", selectedTheme);
+    setTheme(selectedTheme);
   };
 
-  /**
-   * Handle read-only selection change
-   * @param {Event} event 
-   */
-  const handleReadOnlyChange = (event) => {
-    setReadOnly(event.target.checked);
-  };
+  // /**
+  //  * Handle read-only selection change
+  //  * @param {Event} event 
+  //  */
+  // const handleReadOnlyChange = (event) => {
+  //   setReadOnly(event.target.checked);
+  // };
 
   /**
    * Handle code change in editor & emit event to room
@@ -67,48 +75,43 @@ const Editor = ({ socketRef, roomId, onCodeChange }) => {
   return (
     // <div className="container">
     <div className="">
-      {/* language selection */}
-      <div>
-        <label>
-          Language:
-          <select value={language} onChange={handleLanguageChange}>
-            {topLanguages.map((lang) => (
-              <option key={lang} value={lang}>
-                {lang.charAt(0).toUpperCase() + lang.slice(1)}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
-      {/* theme selection */}
-      <div>
-        <label>
-          Theme:
-          <select value={theme} onChange={handleThemeChange}>
-            {availableThemes.map((availableTheme) => (
-              <option key={availableTheme} value={availableTheme}>
-                {availableTheme}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
-      {/* read-only selection */}
-      <div>
-        <label>
-          Read-Only:
-          <input type="checkbox" checked={readOnly} onChange={handleReadOnlyChange} />
-        </label>
+      <div className="editor-options">
+        <Space wrap size={'large'}>
+          {/* language selection */}
+          <Select
+            showSearch
+            placeholder="Select language"
+            defaultValue={languageOptions[0].value}
+            optionFilterProp="children"
+            onChange={(_, language) => handleLanguageChange(language)}
+            filterOption={filterLanguageOptions}
+            options={languageOptions}
+          />
+          {/* theme selection */}
+          <Select
+            placeholder="Select theme"
+            defaultValue={availableThemes[0].value}
+            onChange={(_, theme) => handleThemeChange(theme)}
+            options={availableThemes}
+          />
+        </Space>
+        {/* read-only selection */}
+        {/* <div>
+          <label>
+            Read-Only:
+            <input type="checkbox" checked={readOnly} onChange={handleReadOnlyChange} />
+          </label>
+        </div> */}
       </div>
       <div className="CodeEditor">
         <MonacoEditor
           height="500px"
-          language={language}
-          theme={theme}
+          language={language.value}
+          theme={theme.value}
           value={code}
           onChange={handleCodeChange}
           options={{
-            readOnly: readOnly,
+            // readOnly: readOnly,
             minimap: { enabled: false },
             selectOnLineNumbers: true,
             acceptSuggestionOnEnter: 'on',
