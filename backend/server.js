@@ -4,6 +4,7 @@ const { Server } = require('socket.io');
 const socketHandler = require('./socket.handler');
 require('dotenv');
 const cors = require('cors');
+const morgan = require('morgan');
 const routes = require('./routes/app.route');
 
 const app = express();
@@ -15,6 +16,7 @@ app.use(cors({
   methods: ['GET', 'POST']
 }));
 app.use(express.json());
+app.use(morgan('tiny'));
 
 const port = process.env.PORT || 3001;
 server.listen(port, () => {

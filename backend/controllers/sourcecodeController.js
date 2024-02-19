@@ -57,6 +57,7 @@ module.exports.codeSubmissionHandler = async function (req, res) {
     return res.status(200).json({ status: 'success', message: 'Compile & execute completed', data: submissionResponse.data });
 
   } catch (err) {
+    console.log("codeSubmissionHandler() error - ", err);
     return res.status(500).json({ status: 'failure', message: 'Internal server error', err: err.message });
   }
 }
