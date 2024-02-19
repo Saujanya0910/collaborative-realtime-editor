@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import MonacoEditor from '@monaco-editor/react';
 import { availableThemes, languageOptions, ACTIONS } from '../utils/constants.js';
-import { Select, Space, Row, Col, Input, Button } from 'antd';
+import { Select, Space, Row, Col, Input, Button, Flex } from 'antd';
 import { submitCodeForEvaluation } from '../service.js';
 import toast from 'react-hot-toast';
+import { Buffer } from 'buffer'
 const { TextArea } = Input
 
 const Editor = ({ socketRef, roomId, onCodeChange }) => {
@@ -13,6 +14,7 @@ const Editor = ({ socketRef, roomId, onCodeChange }) => {
   const [customInput, setCustomInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isCompilationAllowed, setIsCompilationAllowed] = useState(false);
+  const [outputDetails, setOutputDetails] = useState(null);
   // const [readOnly, setReadOnly] = useState(false);
 
   // Handle UI changes
@@ -65,6 +67,7 @@ const Editor = ({ socketRef, roomId, onCodeChange }) => {
    */
   const handleCodeCompile = async () => {
     setIsLoading(true);
+    setIsCompilationAllowed(false);
 
     await toast.promise(
       submitCodeForEvaluation({ language_id: language.id, source_code: code, stdin: customInput }),
@@ -72,10 +75,21 @@ const Editor = ({ socketRef, roomId, onCodeChange }) => {
         loading: 'Running code compilation ⏳',
         success: ({ data: submissionResp }) => {
           if(submissionResp && submissionResp.status === 'success') {
-            setIsLoading(false);
-            const codeSubmissionOutput = submissionResp.data;
-            return 'Compilation successful!';
+            const statusId = submissionResp?.status?.id;
+            if (statusId === 1 || statusId === 2) {
+              // still processing
+              setTimeout(() => {
+                handleCodeCompile();
+              }, 2000)
+              return;
+            } else {
+              setIsLoading(false);
+              setOutputDetails(submissionResp.data);
+              setIsCompilationAllowed(true);
+              return 'Compilation successful!';
+            }
           }
+
           return 'Compilation complete!'
         },
         error: (err) => {
@@ -86,6 +100,41 @@ const Editor = ({ socketRef, roomId, onCodeChange }) => {
         duration: { loading: 1500, success: 2000, error: 3000 }
       }
     );
+  }
+
+  /**
+   * Generate UI changes based on code execution results
+   */
+  const getCodeExecutionResult = () => {
+    const statusId = outputDetails?.status?.id;
+    if (statusId === 6) {
+      // compilation error
+      return (
+        <pre className="text-red-500">
+          {Buffer.from(outputDetails?.compile_output, 'base64').toString('utf-8')}
+        </pre>
+      );
+    } else if (statusId === 3) {
+      return (
+        <pre className="text-green-500">
+          {Buffer.from(outputDetails.stdout, 'base64').toString('utf-8') !== null
+            ? `${Buffer.from(outputDetails.stdout, 'base64').toString('utf-8')}`
+            : null}
+        </pre>
+      );
+    } else if (statusId === 5) {
+      return (
+        <pre className="text-red-500">
+          {`Time Limit Exceeded`}
+        </pre>
+      );
+    } else {
+      return (
+        <pre className="text-red-500">
+          {Buffer.from(outputDetails?.stderr, 'base64').toString('utf-8')}
+        </pre>
+      );
+    }
   }
 
   useEffect(() => {
@@ -172,8 +221,21 @@ const Editor = ({ socketRef, roomId, onCodeChange }) => {
           {/* execution section */}
           <Col md={9}>
             <div className='CodeOutput'>
-              <h2>Output</h2>
-              <div className="outputWindow"></div>
+              <Flex className="outputTopBar" justify={'space-between'} align={'center'}>
+                <h2>Output</h2>
+                <Button
+                  size="large"
+                  loading={isLoading}
+                  disabled={!isCompilationAllowed}
+                  onClick={handleCodeCompile}
+                  style={{float: 'right'}}
+                >
+                  Compile & Execute
+                </Button>
+              </Flex>
+              <div className="outputWindow">
+                <>{outputDetails ? getCodeExecutionResult() : null}</>
+              </div>
               <div className="customInput">
                 <TextArea
                   value={customInput}
@@ -182,15 +244,30 @@ const Editor = ({ socketRef, roomId, onCodeChange }) => {
                   autoSize={{ minRows: 3, maxRows: 6 }}
                 />
               </div>
-              <Button 
-                size="large" 
-                loading={isLoading}
-                disabled={!isCompilationAllowed}
-                onClick={handleCodeCompile}
-                style={{float: 'right'}}
-              >
-                Compile & Execute
-              </Button>
+              <div className="outputDetails">
+                {outputDetails && 
+                  <>
+                    <p className="">
+                      Status:{" "}
+                      <span className="">
+                        {outputDetails?.status?.description}
+                      </span>
+                    </p>
+                    <p className="">
+                      Memory:{" "}
+                      <span className="">
+                        {outputDetails?.memory}
+                      </span>
+                    </p>
+                    <p className="">
+                      Time:{" "}
+                      <span className="">
+                        {outputDetails?.time}
+                      </span>
+                    </p>
+                  </>
+                }
+              </div>
             </div>
           </Col>
         </Row>
