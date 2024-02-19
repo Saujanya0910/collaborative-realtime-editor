@@ -18,7 +18,7 @@ module.exports.codeSubmissionHandler = async function (req, res) {
     const { language_id, source_code: sourceCodeFromPayload, stdin: stdinFromPayload } = req.body;
   
     const sourceCodeDecrypted = decryptData(sourceCodeFromPayload);
-    const stdinDecrypted = decryptData(stdinFromPayload);
+    const stdinDecrypted = stdinFromPayload ? decryptData(stdinFromPayload) : null;
   
     const apiHost = process.env.RAPID_API_HOST;
     const apiUrl = process.env.RAPID_API_URL;
@@ -28,7 +28,7 @@ module.exports.codeSubmissionHandler = async function (req, res) {
     const { data: tokenResponse } = await axios.default.request({
       method: 'POST',
       url: apiUrl,
-      params: { base_encoded: "true", fields: '*' },
+      params: { base64_encoded: "true", fields: "*" },
       headers: {
         "content-type": "application/json",
         "Content-Type": "application/json",
@@ -37,8 +37,8 @@ module.exports.codeSubmissionHandler = async function (req, res) {
       },
       data: {
         language_id,
-        source_code: new Buffer(sourceCodeDecrypted).toString('base64'),
-        stdin: new Buffer(stdinDecrypted).toString('base64')
+        source_code: Buffer.from(sourceCodeDecrypted, 'utf-8').toString('base64'),
+        stdin: stdinDecrypted ? Buffer.from(stdinDecrypted, 'utf-8').toString('base64') : null
       }
     });
     const apiTokenForSubmissionReq = tokenResponse.token;

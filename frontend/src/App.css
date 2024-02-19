@@ -164,6 +164,28 @@ input {
   color: #f8f8f2;
 }
 
+.CodeOutput h2 {
+  color: #f8f8f2;
+  margin-top: 0;
+}
+.outputWindow {
+  height: 14rem;
+  font-weight: 500;
+  background-color: rgb(30, 41, 59);
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  overflow-y: auto;
+  margin-bottom: 20px;
+}
+
+.customInput {
+  margin-bottom: 20px;
+}
+
+.compileBtn {
+  float: right;
+}
+
 footer {
   position: fixed;
   bottom: 0;

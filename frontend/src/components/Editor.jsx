@@ -1,12 +1,18 @@
 import { useEffect, useState } from 'react';
 import MonacoEditor from '@monaco-editor/react';
 import { availableThemes, languageOptions, ACTIONS } from '../utils/constants.js';
-import { Select, Space } from 'antd';
+import { Select, Space, Row, Col, Input, Button } from 'antd';
+import { submitCodeForEvaluation } from '../service.js';
+import toast from 'react-hot-toast';
+const { TextArea } = Input
 
 const Editor = ({ socketRef, roomId, onCodeChange }) => {
   const [code, setCode] = useState("// Your initial code here");
   const [language, setLanguage] = useState(languageOptions[0]);
   const [theme, setTheme] = useState(availableThemes[0]);
+  const [customInput, setCustomInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isCompilationAllowed, setIsCompilationAllowed] = useState(false);
   // const [readOnly, setReadOnly] = useState(false);
 
   // Handle UI changes
@@ -30,7 +36,6 @@ const Editor = ({ socketRef, roomId, onCodeChange }) => {
    * @param {import('../utils/constants.js').ThemeOption} selectedTheme 
    */
   const handleThemeChange = (selectedTheme) => {
-    console.log("selectedTheme", selectedTheme);
     setTheme(selectedTheme);
   };
 
@@ -55,6 +60,34 @@ const Editor = ({ socketRef, roomId, onCodeChange }) => {
     onCodeChange(value);
   }
 
+  /**
+   * Compile code in current state of the editor
+   */
+  const handleCodeCompile = async () => {
+    setIsLoading(true);
+
+    await toast.promise(
+      submitCodeForEvaluation({ language_id: language.id, source_code: code, stdin: customInput }),
+      {
+        loading: 'Running code compilation ⏳',
+        success: ({ data: submissionResp }) => {
+          if(submissionResp && submissionResp.status === 'success') {
+            setIsLoading(false);
+            const codeSubmissionOutput = submissionResp.data;
+            return 'Compilation successful!';
+          }
+          return 'Compilation complete!'
+        },
+        error: (err) => {
+          setIsLoading(false);
+          console.log("err", err);
+          return 'Code compilation & execution failed';
+        },
+        duration: { loading: 1500, success: 2000, error: 3000 }
+      }
+    );
+  }
+
   useEffect(() => {
     // listen to CODE-CHANGE event from server
     if(socketRef && socketRef.current) {
@@ -70,7 +103,15 @@ const Editor = ({ socketRef, roomId, onCodeChange }) => {
       // unsubscribe from all listeners
       socketRef.current.off(ACTIONS.CODE_CHANGE);
     }
-  }, [socketRef.current])
+  }, [socketRef.current]);
+
+  useEffect(() => {
+    if(code && code !== '// Your initial code here') {
+      setIsCompilationAllowed(true);
+    } else {
+      setIsCompilationAllowed(false);
+    }
+  }, [code]);
 
   return (
     // <div className="container">
@@ -103,23 +144,56 @@ const Editor = ({ socketRef, roomId, onCodeChange }) => {
           </label>
         </div> */}
       </div>
-      <div className="CodeEditor">
-        <MonacoEditor
-          height="500px"
-          language={language.value}
-          theme={theme.value}
-          value={code}
-          onChange={handleCodeChange}
-          options={{
-            // readOnly: readOnly,
-            minimap: { enabled: false },
-            selectOnLineNumbers: true,
-            acceptSuggestionOnEnter: 'on',
-            autoClosingBrackets: 'always',
-            cursorBlinking: 'blink',
-            autoClosingQuotes: 'always'
-          }}
-        />
+      <div>
+        <Row gutter={[40, 16]} style={{marginRight: 0}}>
+          {/* editor section */}
+          <Col md={14}>
+            <div className="CodeEditor">
+              <MonacoEditor
+                height="500px"
+                language={language.value}
+                theme={theme.value}
+                value={code}
+                onChange={handleCodeChange}
+                options={{
+                  // readOnly: readOnly,
+                  minimap: { enabled: false },
+                  selectOnLineNumbers: true,
+                  acceptSuggestionOnEnter: 'on',
+                  autoClosingBrackets: 'always',
+                  cursorBlinking: 'blink',
+                  autoClosingQuotes: 'always',
+                  wordWrap: 'on'
+                }}
+              />
+            </div>
+          </Col>
+
+          {/* execution section */}
+          <Col md={9}>
+            <div className='CodeOutput'>
+              <h2>Output</h2>
+              <div className="outputWindow"></div>
+              <div className="customInput">
+                <TextArea
+                  value={customInput}
+                  onChange={(e) => setCustomInput(e.target.value)}
+                  placeholder="Custom input"
+                  autoSize={{ minRows: 3, maxRows: 6 }}
+                />
+              </div>
+              <Button 
+                size="large" 
+                loading={isLoading}
+                disabled={!isCompilationAllowed}
+                onClick={handleCodeCompile}
+                style={{float: 'right'}}
+              >
+                Compile & Execute
+              </Button>
+            </div>
+          </Col>
+        </Row>
       </div>
     </div>
   );
