@@ -11,7 +11,7 @@ const server = http.createServer(app);
 const io = new Server(server);
 
 app.use(cors({
-  origin: ['*'],
+  origin: (_, callback) => callback(null, true),
   methods: ['GET', 'POST']
 }));
 app.use(express.json());

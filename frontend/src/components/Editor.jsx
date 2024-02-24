@@ -76,21 +76,22 @@ const Editor = ({ socketRef, roomId, onCodeChange }) => {
     await toast.promise(
       submitCodeForEvaluation(payload),
       {
-        loading: 'Running code compilation ⏳',
+        loading: 'Processing ⏳',
         success: ({ data: submissionResp }) => {
           if(submissionResp && submissionResp.status === 'success') {
             const submissionOutput = submissionResp?.data;
             console.log("submissionOutput", submissionOutput);
             const statusId = submissionOutput?.status?.id;
             if (statusId === 1 || statusId === 2) {
+              setOutputDetails(submissionOutput);
               // still processing
               setTimeout(() => {
                 handleCodeCompile(true);
               }, 2000)
-              return;
+              return 'Processing ⏳';
             } else {
               setIsLoading(false);
-              setOutputDetails(submissionOutput);
+              setOutputDetails({ ...submissionOutput, token: null });
               setIsCompilationAllowed(true);
               return 'Compilation successful!';
             }
