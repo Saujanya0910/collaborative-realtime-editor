@@ -3,13 +3,14 @@ import { encryptData } from './utils/helpers';
 
 /**
  * Submit code to backend for compilation & execution
- * @param {{ language_id: number, source_code: string, stdin?: string }} payload 
+ * @param {{ language_id: number, source_code: string, stdin?: string, token?: string }} payload 
  */
-export const submitCodeForEvaluation = async function ({ language_id, source_code, stdin }) {
+export const submitCodeForEvaluation = async function ({ language_id, source_code, stdin, token }) {
   const requestPayload = {
     language_id,
     source_code: encryptData(source_code),
-    stdin: stdin ? encryptData(stdin) : null
+    stdin: stdin ? encryptData(stdin) : null,
+    token: token ? encryptData(token) : null
   }
 
   return await axios.request({

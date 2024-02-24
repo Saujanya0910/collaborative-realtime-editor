@@ -64,27 +64,33 @@ const Editor = ({ socketRef, roomId, onCodeChange }) => {
 
   /**
    * Compile code in current state of the editor
+   * @param {boolean} retryWithToken Send back the token to backend to recheck status of existing request
    */
-  const handleCodeCompile = async () => {
+  const handleCodeCompile = async (retryWithToken = false) => {
     setIsLoading(true);
     setIsCompilationAllowed(false);
 
+    const payload = { language_id: language.id, source_code: code, stdin: customInput };
+    if(retryWithToken) payload['token'] = outputDetails['token'];
+
     await toast.promise(
-      submitCodeForEvaluation({ language_id: language.id, source_code: code, stdin: customInput }),
+      submitCodeForEvaluation(payload),
       {
         loading: 'Running code compilation ⏳',
         success: ({ data: submissionResp }) => {
           if(submissionResp && submissionResp.status === 'success') {
-            const statusId = submissionResp?.status?.id;
+            const submissionOutput = submissionResp?.data;
+            console.log("submissionOutput", submissionOutput);
+            const statusId = submissionOutput?.status?.id;
             if (statusId === 1 || statusId === 2) {
               // still processing
               setTimeout(() => {
-                handleCodeCompile();
+                handleCodeCompile(true);
               }, 2000)
               return;
             } else {
               setIsLoading(false);
-              setOutputDetails(submissionResp.data);
+              setOutputDetails(submissionOutput);
               setIsCompilationAllowed(true);
               return 'Compilation successful!';
             }
