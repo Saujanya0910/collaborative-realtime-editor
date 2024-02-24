@@ -71,7 +71,7 @@ const Editor = ({ socketRef, roomId, onCodeChange }) => {
     setIsCompilationAllowed(false);
 
     const payload = { language_id: language.id, source_code: code, stdin: customInput };
-    if(retryWithToken) payload['token'] = outputDetails['token'];
+    if(retryWithToken) payload['token'] = outputDetails?.token;
 
     await toast.promise(
       submitCodeForEvaluation(payload),
