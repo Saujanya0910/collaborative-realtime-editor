@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import MonacoEditor from '@monaco-editor/react';
 import { availableThemes, languageOptions, ACTIONS } from '../utils/constants.js';
 import { Select, Space, Row, Col, Input, Button, Flex } from 'antd';
-import { submitCodeForEvaluation } from '../service.js';
+import { getFromLocalStorage, setInLocalStorage, submitCodeForEvaluation } from '../service.js';
 import toast from 'react-hot-toast';
 import { Buffer } from 'buffer'
 const { TextArea } = Input
@@ -20,10 +20,11 @@ const Editor = ({ socketRef, roomId, onCodeChange }) => {
   // Handle UI changes
   /**
    * Handle language selection change
-   * @param {string} selectedLanguage 
+   * @param {import('../utils/constants.js').LanguageOption} selectedLanguage 
    */
   const handleLanguageChange = (selectedLanguage) => {
     setLanguage(selectedLanguage);
+    setInLocalStorage('language', JSON.stringify(selectedLanguage));
   };
 
   /**
@@ -39,6 +40,7 @@ const Editor = ({ socketRef, roomId, onCodeChange }) => {
    */
   const handleThemeChange = (selectedTheme) => {
     setTheme(selectedTheme);
+    setInLocalStorage('theme', JSON.stringify(selectedTheme));
   };
 
   // /**
@@ -59,25 +61,30 @@ const Editor = ({ socketRef, roomId, onCodeChange }) => {
       roomId,
       code: value
     });
+    if(value && (value !== '// Your initial code here')) setInLocalStorage('code', value);
     onCodeChange(value);
   }
 
   /**
    * Compile code in current state of the editor
-   * @param {boolean} retryWithToken Send back the token to backend to recheck status of existing request
+   * @param {boolean} existingRequestToken Token to be sent back to backend to recheck status of existing request
    */
-  const handleCodeCompile = async (retryWithToken = false) => {
+  const handleCodeCompile = async (existingRequestToken = false) => {
+    debugger;
     setIsLoading(true);
     setIsCompilationAllowed(false);
 
     const payload = { language_id: language.id, source_code: code, stdin: customInput };
-    if(retryWithToken) payload['token'] = outputDetails?.token;
+    if(existingRequestToken) {
+      payload['token'] = existingRequestToken;
+    };
 
     await toast.promise(
       submitCodeForEvaluation(payload),
       {
         loading: 'Processing ⏳',
-        success: ({ data: submissionResp }) => {
+        success: (apiResponse) => {
+          const submissionResp = apiResponse?.data;
           if(submissionResp && submissionResp.status === 'success') {
             const submissionOutput = submissionResp?.data;
             console.log("submissionOutput", submissionOutput);
@@ -86,7 +93,7 @@ const Editor = ({ socketRef, roomId, onCodeChange }) => {
               setOutputDetails(submissionOutput);
               // still processing
               setTimeout(() => {
-                handleCodeCompile(true);
+                handleCodeCompile(submissionOutput?.token);
               }, 2000)
               return 'Processing ⏳';
             } else {
@@ -95,9 +102,9 @@ const Editor = ({ socketRef, roomId, onCodeChange }) => {
               setIsCompilationAllowed(true);
               return 'Compilation successful!';
             }
+          } else {
+            throw 'Something went wrong';
           }
-
-          return 'Compilation complete!'
         },
         error: (err) => {
           setIsLoading(false);
@@ -115,18 +122,18 @@ const Editor = ({ socketRef, roomId, onCodeChange }) => {
   const getCodeExecutionResult = () => {
     const statusId = outputDetails?.status?.id;
     if (statusId === 6) {
+      const compilationErr = atob(outputDetails?.compile_output);
       // compilation error
       return (
         <pre className="text-red-500">
-          {Buffer.from(outputDetails?.compile_output, 'base64').toString('utf-8')}
+          {compilationErr ? `${compilationErr}` : null}
         </pre>
       );
     } else if (statusId === 3) {
+      const output = atob(outputDetails.stdout);
       return (
         <pre className="text-green-500">
-          {Buffer.from(outputDetails.stdout, 'base64').toString('utf-8') !== null
-            ? `${Buffer.from(outputDetails.stdout, 'base64').toString('utf-8')}`
-            : null}
+          {output !== null ? `${output}` : null}
         </pre>
       );
     } else if (statusId === 5) {
@@ -136,13 +143,36 @@ const Editor = ({ socketRef, roomId, onCodeChange }) => {
         </pre>
       );
     } else {
+      const stdErr = atob(outputDetails?.stderr);
       return (
         <pre className="text-red-500">
-          {Buffer.from(outputDetails?.stderr, 'base64').toString('utf-8')}
+          {stdErr ? `${stdErr}` : null}
         </pre>
       );
     }
   }
+
+  useEffect(() => {
+    // manage state
+    const savedCode = getFromLocalStorage('code');
+    if(savedCode) {
+      setCode(savedCode);
+    };
+    
+    try {
+      const savedLanguage = getFromLocalStorage('language');
+      if(savedLanguage) {
+        setLanguage(JSON.parse(savedLanguage));
+      };
+    } catch (error) {}
+    
+    try {
+      const savedTheme = getFromLocalStorage('theme');
+      if(savedTheme) {
+        setTheme(JSON.parse(savedTheme));
+      };
+    } catch (error) {}
+  }, []);
 
   useEffect(() => {
     // listen to CODE-CHANGE event from server
@@ -178,7 +208,8 @@ const Editor = ({ socketRef, roomId, onCodeChange }) => {
           <Select
             showSearch
             placeholder="Select language"
-            defaultValue={languageOptions[0].value}
+            value={language.value}
+            style={{width: '220px'}}
             optionFilterProp="children"
             onChange={(_, language) => handleLanguageChange(language)}
             filterOption={filterLanguageOptions}
@@ -187,7 +218,7 @@ const Editor = ({ socketRef, roomId, onCodeChange }) => {
           {/* theme selection */}
           <Select
             placeholder="Select theme"
-            defaultValue={availableThemes[0].value}
+            value={theme.value}
             onChange={(_, theme) => handleThemeChange(theme)}
             options={availableThemes}
           />
@@ -234,7 +265,7 @@ const Editor = ({ socketRef, roomId, onCodeChange }) => {
                   size="large"
                   loading={isLoading}
                   disabled={!isCompilationAllowed}
-                  onClick={handleCodeCompile}
+                  onClick={() => handleCodeCompile(false)}
                   style={{float: 'right'}}
                 >
                   Compile & Execute

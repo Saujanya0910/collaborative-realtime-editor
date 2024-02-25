@@ -5,6 +5,7 @@ import Client from "../components/Client";
 import CodeEditor from "../components/Editor";
 import toast from 'react-hot-toast';
 import { ACTIONS } from "../utils/constants";
+import { getFromLocalStorage, removeFromLocalStorage } from "../service";
 
 /**
  * @typedef EachClient
@@ -40,11 +41,25 @@ const Editor = () => {
    */
   const leaveRoom = () => {
     toast.success(`Leaving the current room...`);
+    // clear all states
+    removeFromLocalStorage('code');
+    removeFromLocalStorage('language');
+    removeFromLocalStorage('theme');
+    removeFromLocalStorage('roomId');
+
     setTimeout(() => navigator('/'), 500);
   }
   
   useEffect(() => {
     const init = async () => {
+      const savedRoomId = getFromLocalStorage('roomId');
+      if(savedRoomId !== roomId) { // if user joined new room
+        // clear all states
+        removeFromLocalStorage('roomId');
+        removeFromLocalStorage('code');
+        removeFromLocalStorage('language');
+        removeFromLocalStorage('theme');
+      }
       const backendUrl = import.meta.env.VITE_REACT_APP_BACKEND_URL;
       socketRef.current = await initSocket(backendUrl);
 

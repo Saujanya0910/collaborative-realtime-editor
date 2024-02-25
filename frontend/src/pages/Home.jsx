@@ -2,6 +2,7 @@ import { useState } from "react";
 import { v4 as uuidV4 } from "uuid";
 import toast from 'react-hot-toast';
 import { useNavigate } from "react-router-dom";
+import { setInLocalStorage } from "../service";
 
 const Home = () => {
 
@@ -40,6 +41,8 @@ const Home = () => {
   const joinRoom = () => {
     if(!(roomId && username)) return toast.error('Room ID and username is required!');
 
+    setInLocalStorage('roomId', roomId);
+    setInLocalStorage('username', username);  
     navigator(`/editor/${roomId}`, { state: { username } })
   }
 

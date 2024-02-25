@@ -47,6 +47,8 @@ module.exports.codeSubmissionHandler = async function (req, res) {
       });
 
       apiTokenForSubmissionReq = data.token;
+    } else {
+      apiTokenForSubmissionReq = tokenDecrypted;
     }
 
     // second token to perform code submission
