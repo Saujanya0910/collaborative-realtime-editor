@@ -16,6 +16,7 @@ The app is built using React.js built using Vite for the frontend, and Node.js, 
 ## Technologies
 - Frontend
   - React.js
+  - Ant Design UI
   - Vite
 
 ## Installation
@@ -39,6 +40,11 @@ npm install
 
 # From the root directory, switch to the frontend directory
 cd frontend
+
+# Create a .env file in the root of the frontend directory and add the following environment variables
+VITE_REACT_APP_BACKEND_URL=<YOUR_BACKEND_URL>
+VITE_REACT_APP_ENCRYPTION_KEY=<YOUR_ENCRYPTION_KEY> # must be same as the backend's encryption key
+VITE_REACT_APP_ENCRYPTION_IV=<YOUR_ENCRYPTION_IV> # must be same as the backend's encryption IV
 
 # Run the server
 npm run dev

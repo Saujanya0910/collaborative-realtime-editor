@@ -16,14 +16,16 @@ The app is built using React.js built using Vite for the frontend, and Node.js, 
 ## Technologies
 - Frontend
   - React.js
+  - Ant Design UI
   - Vite
 - Backend
   - Node.js
   - Express.js
   - Socket.io
+  - Judge0 CE API (for code compilation and execution) (refer to the [Judge0 CE API](https://rapidapi.com/judge0-official/api/judge0-ce))
 
 ## Installation
-The repository is a mono-repo, hence, it contains two directories, *frontend*, and *backend*. The *frontend* directory contains the code for the frontend of the app, and the backend directory contains the code for the backend of the app.
+The repository is a mono-repo, hence, it contains two directories, *frontend*, and *backend*. The *frontend* directory contains the code for the frontend of the app, and the *backend* directory contains the code for the backend of the app.
 
 ```bash
 # Clone the repository
@@ -61,6 +63,8 @@ cd backend
 npm run start:dev
 
 # The frontend server will start on port 5173 by default, and the backend server will start on port mentioned in the environment variable, else on port 3001 by default.
+
+# Refer to the README in the respective directories for more information.
 ```
 
 # TODO
