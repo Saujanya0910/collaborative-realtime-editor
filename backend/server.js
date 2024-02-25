@@ -12,7 +12,7 @@ const server = http.createServer(app);
 const io = new Server(server);
 
 app.use(cors({
-  origin: ['http://localhost:5173', 'https://collaborative-realtime-editor.vercel.app'],
+  origin: (_, callback) => callback(null, true),
   methods: ['GET', 'POST']
 }));
 app.use(express.json());
