@@ -67,10 +67,9 @@ const Editor = ({ socketRef, roomId, onCodeChange }) => {
 
   /**
    * Compile code in current state of the editor
-   * @param {boolean} existingRequestToken Token to be sent back to backend to recheck status of existing request
+   * @param {string} existingRequestToken Token to be sent back to backend to recheck status of existing request
    */
-  const handleCodeCompile = async (existingRequestToken = false) => {
-    debugger;
+  const handleCodeCompile = async (existingRequestToken = null) => {
     setIsLoading(true);
     setIsCompilationAllowed(false);
 
@@ -87,10 +86,8 @@ const Editor = ({ socketRef, roomId, onCodeChange }) => {
           const submissionResp = apiResponse?.data;
           if(submissionResp && submissionResp.status === 'success') {
             const submissionOutput = submissionResp?.data;
-            console.log("submissionOutput", submissionOutput);
             const statusId = submissionOutput?.status?.id;
             if (statusId === 1 || statusId === 2) {
-              setOutputDetails(submissionOutput);
               // still processing
               setTimeout(() => {
                 handleCodeCompile(submissionOutput?.token);
@@ -265,7 +262,7 @@ const Editor = ({ socketRef, roomId, onCodeChange }) => {
                   size="large"
                   loading={isLoading}
                   disabled={!isCompilationAllowed}
-                  onClick={() => handleCodeCompile(false)}
+                  onClick={() => handleCodeCompile(null)}
                   style={{float: 'right'}}
                 >
                   Compile & Execute
